@@ -6,17 +6,12 @@ Aplicacion web interna para registrar ventas y controlar el stock del minimarket
 
 ```
 ventas-bodega/
-├── .kiro/
-│   └── specs/
-│       └── ventas-bodega/
-│           ├── .config.kiro    # Configuracion del spec (Kiro)
-│           ├── requirements.md # Criterios de aceptacion EARS
-│           └── design.md       # Arquitectura, DDL y contratos de clases
-├── docs/
-│   ├── D0.md                   # Documento de definicion del proyecto
-│   ├── PROMPTS.md              # Historial de prompts del proyecto
-│   └── REGISTRO.md             # Correcciones y decisiones de diseno
-└── README.md
+├── app/                        # Modelos, repositorios, servicios, controladores
+├── config/                     # Conexion PDO configurada desde .env
+├── database/                   # Esquema y datos de prueba
+├── public/                     # Punto de entrada HTTP y recursos publicos
+├── views/                      # Plantillas HTML
+└── .kiro/specs/ventas-bodega/  # Requisitos y diseno tecnico
 ```
 
 ## Stack
@@ -31,3 +26,13 @@ ventas-bodega/
 - Definicion del proyecto: `docs/D0.md`
 - Requisitos: `.kiro/specs/ventas-bodega/requirements.md`
 - Diseno tecnico: `.kiro/specs/ventas-bodega/design.md`
+
+## Ejecucion local con XAMPP
+
+1. Inicia Apache y MySQL desde el panel de XAMPP.
+2. En phpMyAdmin, ejecuta `database/schema.sql` para crear la base de datos y las tablas.
+3. Copia `.env.example` a `.env` y configura `DB_HOST`, `DB_NAME`, `DB_USER` y `DB_PASS` para tu instalacion local. El archivo `.env` no se versiona.
+4. Opcionalmente, ejecuta `database/seed.sql` para cargar productos de prueba.
+5. Configura Apache para servir `public/` como directorio publico del proyecto y abre la aplicacion en el navegador.
+
+La aplicacion requiere PHP 8 con PDO MySQL y las extensiones `mbstring` y `pdo_mysql`.

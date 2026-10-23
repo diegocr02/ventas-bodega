@@ -9,8 +9,6 @@
 
 ```
 ventas-bodega/
-├── config/
-│   └── database.php              # Fabrica la instancia PDO; lee credenciales desde .env
 ├── app/
 │   ├── Models/
 │   │   ├── Producto.php
@@ -28,6 +26,8 @@ ventas-bodega/
 │   └── Controllers/
 │       ├── ProductoController.php
 │       └── VentaController.php
+├── config/
+│   └── database.php              # Fabrica la instancia PDO; lee credenciales desde .env
 ├── views/
 │   ├── layout.php
 │   ├── productos/
@@ -37,12 +37,17 @@ ventas-bodega/
 │       ├── nueva.php
 │       └── del_dia.php
 ├── public/
-│   └── index.php                 # Front controller; unico punto de entrada HTTP
+│   ├── index.php                 # Front controller; unico punto de entrada HTTP
+│   └── assets/
+│       └── css/
+│           └── app.css           # Estilos y alerta visual de stock bajo
+├── database/
+│   ├── schema.sql                # DDL de producto y venta
+│   └── seed.sql                  # Datos de prueba P001-P008
 ├── .env                          # Credenciales (excluido del repositorio)
 ├── .env.example                  # Plantilla sin valores reales
 ├── .gitignore                    # Incluye .env
-├── schema.sql                    # DDL: CREATE TABLE producto y venta
-└── seed.sql                      # Datos de prueba P001-P008
+└── README.md                     # Instalación local con XAMPP
 ```
 
 ---
@@ -413,8 +418,9 @@ VentaService::registrar(int $productoId, int $cantidad): void
 │           )
 │
 ├─ PASO 5 — Calcular total
-│     $total = bcmul($producto->precio_venta, (string)$cantidad, 2)
-│     (bcmul preserva precision DECIMAL sin artefactos de punto flotante)
+│     Convertir precio_venta a centavos enteros y multiplicar por cantidad.
+│     Rechazar el total si excede el maximo de DECIMAL(10,2).
+│     Formatear el resultado como texto con dos decimales, sin usar FLOAT.
 │
 ├─ PASO 6 — Insertar registro de venta  [RF3]
 │     $ventaRepo->save(

@@ -1,7 +1,7 @@
 ﻿# Design — Sistema de Ventas y Control de Stock
 
 > Derivado de D0.md y requirements.md.  
-> Stack: PHP 8 OOP · `declare(strict_types=1)` · MySQL XAMPP (base `bodega_ventas`, charset `utf8mb4`) · PDO con sentencias preparadas · sin frameworks.
+> Stack: PHP 8.0 OOP · `declare(strict_types=1)` · MySQL XAMPP (base `bodega_ventas`, charset `utf8mb4`) · PDO con sentencias preparadas · sin frameworks.
 
 ---
 
@@ -23,6 +23,8 @@ ventas-bodega/
 │   │   ├── ValidacionException.php
 │   │   ├── StockInsuficienteException.php
 │   │   └── CodigoDuplicadoException.php
+│   ├── Security/
+│   │   └── Csrf.php                 # Genera y valida tokens asociados a la sesion
 │   └── Controllers/
 │       ├── ProductoController.php
 │       └── VentaController.php
@@ -58,7 +60,7 @@ ventas-bodega/
 
 **Que hace:**
 - Representa un unico registro del dominio como objeto PHP con tipado estricto.
-- Expone propiedades de solo lectura declaradas en el constructor (promoted properties).
+- Expone propiedades tipadas declaradas en el constructor (promoted properties, compatibles con PHP 8.0).
 - Puede contener metodos de consulta de estado puros (sin efectos secundarios), como `tieneStockBajo()`.
 
 **Que NO hace:**
@@ -102,6 +104,7 @@ ventas-bodega/
 
 **Que hace:**
 - Lee datos de `$_POST` / `$_GET`.
+- Rechaza solicitudes POST sin un token CSRF valido antes de llamar al Service.
 - Realiza la validacion de formato y tipo en el servidor (RNF7) antes de invocar el Service.
 - Llama al Service y captura las excepciones de dominio.
 - Asigna variables y carga el archivo de vista correspondiente.
@@ -117,6 +120,7 @@ ventas-bodega/
 
 **Que hace:**
 - Genera el HTML final enviado al navegador.
+- Incluye un token CSRF oculto en cada formulario que modifica datos.
 - Escapa toda variable con `htmlspecialchars()` antes de emitirla (RNF6).
 - Muestra mensajes de error o exito que el Controller preparo en variables locales.
 - Aplica la clase CSS de alerta a cada fila de producto cuyo stock sea <= stock_minimo (RNF3).
@@ -214,13 +218,13 @@ Los valores DECIMAL de la BD se leen como `string` para preservar precision exac
 // app/Models/Producto.php
 class Producto {
     public function __construct(
-        public readonly int    $id,
-        public readonly string $codigo,
-        public readonly string $nombre,
-        public readonly string $categoria,
-        public readonly string $precio_venta,   // DECIMAL(10,2) leido como string
-        public readonly int    $stock,
-        public readonly int    $stock_minimo,
+        public int    $id,
+        public string $codigo,
+        public string $nombre,
+        public string $categoria,
+        public string $precio_venta,   // DECIMAL(10,2) leido como string
+        public int    $stock,
+        public int    $stock_minimo,
     ) {}
 
     public function tieneStockBajo(): bool {}   // retorna stock <= stock_minimo
@@ -229,13 +233,13 @@ class Producto {
 // app/Models/Venta.php
 class Venta {
     public function __construct(
-        public readonly int    $id,
-        public readonly int    $producto_id,
-        public readonly string $nombre_producto, // desnormalizado para vistas
-        public readonly int    $cantidad,
-        public readonly string $precio_unitario, // DECIMAL como string
-        public readonly string $total,           // DECIMAL como string
-        public readonly string $fecha_hora,
+        public int    $id,
+        public int    $producto_id,
+        public string $nombre_producto, // desnormalizado para vistas
+        public int    $cantidad,
+        public string $precio_unitario, // DECIMAL como string
+        public string $total,           // DECIMAL como string
+        public string $fecha_hora,
     ) {}
 }
 ```
@@ -247,7 +251,7 @@ class Venta {
 ```php
 // app/Repositories/ProductoRepository.php
 class ProductoRepository {
-    public function __construct(private readonly PDO $pdo) {}
+    public function __construct(private PDO $pdo) {}
 
     public function findAll(): array {}                            // Producto[]
     public function findById(int $id): ?Producto {}
@@ -266,7 +270,7 @@ class ProductoRepository {
 
 // app/Repositories/VentaRepository.php
 class VentaRepository {
-    public function __construct(private readonly PDO $pdo) {}
+    public function __construct(private PDO $pdo) {}
 
     public function save(
         int    $producto_id,
@@ -287,7 +291,7 @@ class VentaRepository {
 // app/Services/ProductoService.php
 class ProductoService {
     public function __construct(
-        private readonly ProductoRepository $repo,
+        private ProductoRepository $repo,
     ) {}
 
     /** @throws ValidacionException|CodigoDuplicadoException */
@@ -307,9 +311,9 @@ class ProductoService {
 // app/Services/VentaService.php
 class VentaService {
     public function __construct(
-        private readonly PDO                $pdo,
-        private readonly ProductoRepository $productoRepo,
-        private readonly VentaRepository    $ventaRepo,
+        private PDO                $pdo,
+        private ProductoRepository $productoRepo,
+        private VentaRepository    $ventaRepo,
     ) {}
 
     /** @throws ValidacionException|StockInsuficienteException */
@@ -333,7 +337,7 @@ class ValidacionException extends RuntimeException {}
 // app/Exceptions/StockInsuficienteException.php
 class StockInsuficienteException extends RuntimeException {
     public function __construct(
-        private readonly int $stockDisponible,
+        private int $stockDisponible,
         string $message = '',
         int $code = 0,
         ?\Throwable $previous = null,
@@ -355,7 +359,7 @@ class CodigoDuplicadoException extends RuntimeException {}
 // app/Controllers/ProductoController.php
 class ProductoController {
     public function __construct(
-        private readonly ProductoService $service,
+        private ProductoService $service,
     ) {}
 
     public function lista(): void {}    // GET  — carga views/productos/lista.php
@@ -366,7 +370,7 @@ class ProductoController {
 // app/Controllers/VentaController.php
 class VentaController {
     public function __construct(
-        private readonly VentaService $service,
+        private VentaService $service,
     ) {}
 
     public function nueva(): void {}     // GET  — carga views/ventas/nueva.php con lista de productos

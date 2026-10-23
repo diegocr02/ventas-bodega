@@ -19,6 +19,8 @@ $cantidadIngresada = htmlspecialchars(
     <a class="button" href="?action=productos.nuevo">Registrar producto</a>
 <?php else: ?>
     <form method="post" action="?action=ventas.registrar" class="form-grid">
+        <input type="hidden" name="csrf_token"
+               value="<?= htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
         <label for="producto_id">Producto</label>
         <select id="producto_id" name="producto_id" required>
             <option value="">Seleccione un producto</option>

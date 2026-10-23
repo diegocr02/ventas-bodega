@@ -8,7 +8,7 @@ use PDO;
 
 final class VentaRepository implements VentaRepositoryInterface
 {
-    public function __construct(private readonly PDO $pdo)
+    public function __construct(private PDO $pdo)
     {
     }
 

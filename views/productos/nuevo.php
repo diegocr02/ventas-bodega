@@ -14,6 +14,8 @@ $valor = static fn (string $campo): string => htmlspecialchars(
     </p>
 <?php endif; ?>
 <form method="post" action="?action=productos.guardar" class="form-grid">
+    <input type="hidden" name="csrf_token"
+           value="<?= htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
     <label for="codigo">Código</label>
     <input id="codigo" name="codigo" maxlength="20" required value="<?= $valor('codigo') ?>">
 

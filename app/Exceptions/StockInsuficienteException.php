@@ -8,7 +8,7 @@ use RuntimeException;
 final class StockInsuficienteException extends RuntimeException
 {
     public function __construct(
-        private readonly int $stockDisponible,
+        private int $stockDisponible,
         string $message = '',
         int $code = 0,
         ?\Throwable $previous = null,

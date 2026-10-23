@@ -5,6 +5,7 @@ namespace App\Controllers;
 
 use App\Exceptions\StockInsuficienteException;
 use App\Exceptions\ValidacionException;
+use App\Security\Csrf;
 use App\Services\ProductoService;
 use App\Services\VentaService;
 use Throwable;
@@ -12,8 +13,8 @@ use Throwable;
 final class VentaController
 {
     public function __construct(
-        private readonly VentaService $service,
-        private readonly ProductoService $productoService,
+        private VentaService $service,
+        private ProductoService $productoService,
     ) {
     }
 
@@ -25,6 +26,7 @@ final class VentaController
             'valores' => [],
             'mensaje' => '',
             'tipoMensaje' => 'error',
+            'csrfToken' => Csrf::token(),
         ], 'Registrar venta');
     }
 
@@ -35,6 +37,19 @@ final class VentaController
             'producto_id' => '',
             'cantidad' => '',
         ];
+
+        if (!Csrf::isValid($_POST['csrf_token'] ?? null)) {
+            http_response_code(403);
+            $this->render('ventas/nueva.php', [
+                'productos' => $this->productoService->listar(),
+                'valores' => $valores,
+                'mensaje' => 'La solicitud expiró o no es válida. Recargue el formulario e intente nuevamente.',
+                'tipoMensaje' => 'error',
+                'csrfToken' => Csrf::token(),
+            ], 'Registrar venta');
+
+            return;
+        }
 
         try {
             $valores['producto_id'] = $this->postString('producto_id');
@@ -50,6 +65,7 @@ final class VentaController
                 'valores' => $valores,
                 'mensaje' => $exception->getMessage(),
                 'tipoMensaje' => 'error',
+                'csrfToken' => Csrf::token(),
             ], 'Registrar venta');
         } catch (Throwable $exception) {
             error_log((string) $exception);
@@ -59,6 +75,7 @@ final class VentaController
                 'valores' => $valores,
                 'mensaje' => 'No se pudo registrar la venta. Intente nuevamente.',
                 'tipoMensaje' => 'error',
+                'csrfToken' => Csrf::token(),
             ], 'Registrar venta');
         }
     }

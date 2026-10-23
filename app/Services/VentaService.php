@@ -14,9 +14,9 @@ use Throwable;
 final class VentaService
 {
     public function __construct(
-        private readonly PDO $pdo,
-        private readonly ProductoRepositoryInterface $productoRepo,
-        private readonly VentaRepositoryInterface $ventaRepo,
+        private PDO $pdo,
+        private ProductoRepositoryInterface $productoRepo,
+        private VentaRepositoryInterface $ventaRepo,
     ) {
     }
 

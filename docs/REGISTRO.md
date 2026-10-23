@@ -10,3 +10,4 @@
 | 3 | schema.sql, seed.sql, .env, .env.example, .gitignore | Aceptado sin cambios; verifiqué seed contra la tabla del caso y COUNT(*) = 8 | Se ejecutó sin errores en phpMyAdmin |
 | 4 | Aplicación por capas + tests/run.php (7 OK) | Acepté interfaces de repositorio no previstas en design.md; verifiqué cobertura RN1–RN5 en tests | Las interfaces permiten probar Services sin MySQL |
 | 4 | Cálculo en centavos enteros en lugar de bcmul | Acepté y actualicé design.md | Evita errores de float y no depende de la extensión bcmath |
+| 5 | TECH_DEBT.md y README.md | Rechacé dejar PHP 8.1 como requisito; pedí compatibilidad con PHP 8.0.30 (sin readonly) | El Apache de XAMPP es 8.0 y la app fallaba con error fatal |

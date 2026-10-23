@@ -5,12 +5,13 @@ namespace App\Controllers;
 
 use App\Exceptions\CodigoDuplicadoException;
 use App\Exceptions\ValidacionException;
+use App\Security\Csrf;
 use App\Services\ProductoService;
 use Throwable;
 
 final class ProductoController
 {
-    public function __construct(private readonly ProductoService $service)
+    public function __construct(private ProductoService $service)
     {
     }
 
@@ -31,6 +32,7 @@ final class ProductoController
             'valores' => [],
             'mensaje' => '',
             'tipoMensaje' => 'error',
+            'csrfToken' => Csrf::token(),
         ], 'Nuevo producto');
     }
 
@@ -45,6 +47,18 @@ final class ProductoController
             'stock' => '',
             'stock_minimo' => '',
         ];
+
+        if (!Csrf::isValid($_POST['csrf_token'] ?? null)) {
+            http_response_code(403);
+            $this->render('productos/nuevo.php', [
+                'valores' => $valores,
+                'mensaje' => 'La solicitud expiró o no es válida. Recargue el formulario e intente nuevamente.',
+                'tipoMensaje' => 'error',
+                'csrfToken' => Csrf::token(),
+            ], 'Nuevo producto');
+
+            return;
+        }
 
         try {
             foreach (array_keys($valores) as $campo) {
@@ -65,6 +79,7 @@ final class ProductoController
                 'valores' => $valores,
                 'mensaje' => $exception->getMessage(),
                 'tipoMensaje' => 'error',
+                'csrfToken' => Csrf::token(),
             ], 'Nuevo producto');
         } catch (Throwable $exception) {
             error_log((string) $exception);
@@ -73,6 +88,7 @@ final class ProductoController
                 'valores' => $valores,
                 'mensaje' => 'No se pudo registrar el producto. Intente nuevamente.',
                 'tipoMensaje' => 'error',
+                'csrfToken' => Csrf::token(),
             ], 'Nuevo producto');
         }
     }

@@ -11,7 +11,7 @@ use PDOException;
 
 final class ProductoService
 {
-    public function __construct(private readonly ProductoRepositoryInterface $repo)
+    public function __construct(private ProductoRepositoryInterface $repo)
     {
     }
 
